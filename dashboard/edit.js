@@ -17,8 +17,19 @@ function openEdit(droneId) {
   if (!editingRecord) return;
   document.getElementById('edit-drone-id').textContent = droneId;
   document.getElementById('edit-form').querySelectorAll('[name]').forEach((input) => { input.value = editingRecord[input.name] || ''; });
+  const ewMode = document.getElementById('edit-ew-mode');
+  ewMode.value = editingRecord['Anti Ew'] && editingRecord['Anti Ew'] !== 'Nil' ? 'resilient' : 'none';
+  updateEditEwMode();
   document.getElementById('edit-dialog').showModal();
 }
+function updateEditEwMode() {
+  const resilient = document.getElementById('edit-ew-mode').value === 'resilient';
+  const label = document.getElementById('edit-ew-technology-label');
+  label.classList.toggle('hidden', !resilient);
+  document.getElementById('edit-ew-technology').required = resilient;
+  if (!resilient) document.getElementById('edit-ew-technology').value = '';
+}
+document.getElementById('edit-ew-mode').addEventListener('change', updateEditEwMode);
 function openDetails(droneId) {
   const record = fleetData.find((row) => row['Drone ID'] === droneId);
   if (!record) return;
@@ -37,6 +48,10 @@ document.getElementById('edit-cancel').addEventListener('click', () => document.
 document.getElementById('edit-form').addEventListener('submit', async (event) => {
   event.preventDefault();
   const changes = Object.fromEntries(new FormData(event.currentTarget));
+  const resilient = changes.ewMode === 'resilient';
+  delete changes.ewMode;
+  if (!resilient) changes['Anti Ew'] = 'Nil';
+  if (resilient && !changes['Anti Ew'].trim()) { document.getElementById('edit-message').textContent = 'Enter an EW resilience technology.'; return; }
   if (changes.Serv === 'Svc') changes.Serv = 'Ser';
   if (changes.Serv === 'Unsvc') changes.Serv = 'Unser';
   const response = await fetch('/api/assets/edit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ 'Drone ID': editingRecord['Drone ID'], changes }) });
