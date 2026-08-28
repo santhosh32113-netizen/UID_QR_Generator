@@ -27,6 +27,13 @@ jobs:
       - name: Build executable package
         run: pyinstaller --noconfirm --clean --console --onedir --contents-directory . --name KUIN-G --hidden-import=tools.dashboard_server --hidden-import=tools.create_dashboard_data --hidden-import=src.generate_UIDS --add-data "dashboard;dashboard" --add-data "input;input" --add-data "output;output" --add-data "qr_codes;qr_codes" UID.py
 
+      - name: Verify packaged source folders
+        shell: pwsh
+        run: |
+          foreach ($path in @("dashboard/index.html", "input/Sample.xlsx", "output", "qr_codes")) {
+            if (-not (Test-Path $path)) { throw "Required source path is missing: $path" }
+          }
+
       - name: Upload Windows package
         uses: actions/upload-artifact@v4
         with:
