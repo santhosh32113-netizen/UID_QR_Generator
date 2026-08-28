@@ -18,7 +18,7 @@ from openpyxl import load_workbook
 ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from src.generate_UIDS import create_qr_png, make_kuin, remove_orphan_qr_files, write_distributable_workbook, write_qr_register
+from src.generate_UIDS import create_qr_png, create_qr_svg, make_kuin, remove_orphan_qr_files, write_distributable_workbook, write_qr_register
 from tools.create_dashboard_data import load_records, write_outputs
 
 WORKBOOK = ROOT / "input" / "Sample.xlsx"
@@ -166,6 +166,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             workbook.close()
             QR_DIR.mkdir(exist_ok=True)
             create_qr_png(record["KUIN-G"], QR_DIR / f"{record['KUIN-G']}.png")
+            create_qr_svg(record["KUIN-G"], QR_DIR / f"{record['KUIN-G']}.svg")
             master = load_workbook(MASTER)
             master_sheet = master.active
             master_row = master_sheet.max_row + 1
@@ -179,7 +180,8 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             qr_records = [
                 {"Drone ID": master_sheet.cell(row=row, column=1).value,
                  "KUIN-G": master_sheet.cell(row=row, column=2).value,
-                 "QR File": f"{master_sheet.cell(row=row, column=2).value}.png"}
+                 "QR PNG File": f"{master_sheet.cell(row=row, column=2).value}.png",
+                 "QR SVG File": f"{master_sheet.cell(row=row, column=2).value}.svg"}
                 for row in range(2, master_sheet.max_row + 1)
             ]
             master.close()
@@ -222,7 +224,8 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             qr_records = [
                 {"Drone ID": sheet.cell(row=row, column=1).value,
                  "KUIN-G": sheet.cell(row=row, column=2).value,
-                 "QR File": f"{sheet.cell(row=row, column=2).value}.png"}
+                 "QR PNG File": f"{sheet.cell(row=row, column=2).value}.png",
+                 "QR SVG File": f"{sheet.cell(row=row, column=2).value}.svg"}
                 for row in range(2, sheet.max_row + 1)
             ]
             master.close()

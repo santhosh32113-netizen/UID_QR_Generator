@@ -23,5 +23,6 @@ Open `http://127.0.0.1:8765/index.html` in a browser.
 - `output/distributable_register.xlsx`: KUIN-G and embedded QR images
 - `output/qr_register.csv`: QR tracking register
 - `qr_codes/<KUIN-G>.png`: printable QR image files
+- `qr_codes/<KUIN-G>.svg`: scalable QR files for SolidWorks and print workflows
 
 The QR payload and filename are both KUIN-G. No separate UID is generated.

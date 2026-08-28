@@ -136,7 +136,8 @@ def main() -> None:
     for values in rows:
         kuin = values[-1]
         master_sheet.append([values[1], kuin])
-        qr_records.append({"Drone ID": values[1], "KUIN-G": kuin, "QR File": f"{kuin}.png"})
+        qr_records.append({"Drone ID": values[1], "KUIN-G": kuin,
+                   "QR PNG File": f"{kuin}.png", "QR SVG File": f"{kuin}.svg"})
     master.save(ROOT / "output" / "master_register.xlsx")
     write_distributable_workbook(ROOT / "output" / "distributable_register.xlsx", kuin_values, qr_dir)
     remove_orphan_qr_files(qr_dir, kuin_values)

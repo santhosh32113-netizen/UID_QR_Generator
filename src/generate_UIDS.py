@@ -28,6 +28,7 @@ import unicodedata
 from pathlib import Path
 
 import qrcode
+from qrcode.image.svg import SvgImage
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.styles import Font, PatternFill, Alignment
@@ -145,17 +146,33 @@ def create_qr_png(kuin: str, output_path: Path) -> None:
     image.save(output_path, format="PNG")
 
 
+def create_qr_svg(kuin: str, output_path: Path) -> None:
+    qr = qrcode.QRCode(
+        version=None,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=10,
+        border=4,
+        image_factory=SvgImage,
+    )
+    qr.add_data(kuin)
+    qr.make(fit=True)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    qr.make_image().save(output_path)
+
+
 def write_qr_register(output_path: Path, records) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", newline="", encoding="utf-8") as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=["Drone ID", "KUIN-G", "QR File"])
+        writer = csv.DictWriter(csv_file, fieldnames=["Drone ID", "KUIN-G", "QR PNG File", "QR SVG File"])
         writer.writeheader()
         writer.writerows(records)
 
 
 def remove_orphan_qr_files(qr_dir: Path, kuin_values) -> None:
-    expected = {f"{kuin}.png" for kuin in kuin_values}
-    for path in qr_dir.glob("*.png"):
+    expected = {f"{kuin}.{extension}" for kuin in kuin_values for extension in ("png", "svg")}
+    for path in qr_dir.iterdir():
+        if path.suffix.lower() not in {".png", ".svg"}:
+            continue
         if path.name not in expected:
             path.unlink()
 
@@ -173,6 +190,7 @@ def write_distributable_workbook(output_path: Path, kuin_values, qr_dir: Path) -
 
         qr_path = qr_dir / f"{kuin}.png"
         create_qr_png(kuin, qr_path)
+        create_qr_svg(kuin, qr_dir / f"{kuin}.svg")
 
         img = XLImage(str(qr_path))
         img.width = 150
@@ -212,7 +230,8 @@ def generate(
     remove_orphan_qr_files(qr_dir, kuin_values)
     write_qr_register(
         distributable_output.parent / "qr_register.csv",
-        [{"Drone ID": drone_id, "KUIN-G": kuin, "QR File": f"{kuin}.png"}
+                [{"Drone ID": drone_id, "KUIN-G": kuin,
+                    "QR PNG File": f"{kuin}.png", "QR SVG File": f"{kuin}.svg"}
          for drone_id, kuin in zip(values, kuin_values)],
     )
 
