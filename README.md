@@ -6,7 +6,7 @@ Offline asset register and QR generator for Windows deployment.
 
 The GitHub Actions workflow builds the application on a Windows runner. Run it manually from the **Actions** tab, or push a version tag such as `v1.0.0`.
 
-The workflow publishes `KUIN-G-Windows.zip`. Extract it on the standalone Windows PC and run `KUIN-G.exe` from a writable folder such as `C:\KUIN-G`.
+The workflow publishes `KUIN-G-Windows.zip`. Extract it on the standalone Windows PC and run `KUIN-G.exe` from a writable folder such as `C:\KUIN-G`. Keep the complete extracted `KUIN-G` folder together; do not move only the EXE.
 
 ## Local development
 

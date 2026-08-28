@@ -3,10 +3,11 @@
 import threading
 import webbrowser
 
-from tools.dashboard_server import DashboardHandler, PORT, ThreadingHTTPServer
+from tools.dashboard_server import DashboardHandler, PORT, ThreadingHTTPServer, dashboard_root
 
 
 def main():
+	dashboard_root()
 	server = ThreadingHTTPServer(("127.0.0.1", PORT), DashboardHandler)
 	threading.Timer(0.8, lambda: webbrowser.open(f"http://127.0.0.1:{PORT}/index.html")).start()
 	print(f"KUIN-G dashboard: http://127.0.0.1:{PORT}/index.html")

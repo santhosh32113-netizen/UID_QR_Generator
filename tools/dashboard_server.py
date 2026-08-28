@@ -15,7 +15,9 @@ from pathlib import Path
 
 from openpyxl import load_workbook
 
-ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parents[1]
+APP_ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parents[1]
+RESOURCE_ROOT = Path(getattr(sys, "_MEIPASS", APP_ROOT))
+ROOT = APP_ROOT
 sys.path.insert(0, str(ROOT))
 
 from src.generate_UIDS import create_qr_png, create_qr_svg, make_kuin, remove_orphan_qr_files, write_distributable_workbook, write_qr_register
@@ -28,6 +30,15 @@ REGISTER = ROOT / "output" / "qr_register.csv"
 UPLOAD_DIR = ROOT / "dashboard" / "uploads"
 PORT = 8765
 PASSWORD_FILE = ROOT / "passwords.json"
+
+
+def dashboard_root() -> Path:
+    for candidate in (APP_ROOT / "dashboard", RESOURCE_ROOT / "dashboard"):
+        if (candidate / "index.html").is_file():
+            return candidate
+    raise FileNotFoundError(
+        "Dashboard files are missing. Extract the complete KUIN-G folder before running KUIN-G.exe."
+    )
 
 
 def refresh_dashboard_data():
@@ -64,7 +75,7 @@ def hierarchy_id(record, existing_ids):
 
 class DashboardHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, directory=str(ROOT / "dashboard"), **kwargs)
+        super().__init__(*args, directory=str(dashboard_root()), **kwargs)
 
     def do_POST(self):
         if self.path == "/api/login":
