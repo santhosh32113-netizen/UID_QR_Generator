@@ -2,7 +2,10 @@
 setlocal
 call venv\Scripts\activate
 python -m pip install -r requirements.txt
-pyinstaller --noconfirm --clean --onedir --name KUIN-G ^
+pyinstaller --noconfirm --clean --console --onedir --name KUIN-G ^
+  --hidden-import=tools.dashboard_server ^
+  --hidden-import=tools.create_dashboard_data ^
+  --hidden-import=src.generate_UIDS ^
   --add-data "dashboard;dashboard" ^
   --add-data "input;input" ^
   --add-data "output;output" ^

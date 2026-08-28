@@ -2,6 +2,8 @@
 
 import threading
 import webbrowser
+import traceback
+from pathlib import Path
 
 from tools.dashboard_server import DashboardHandler, PORT, ThreadingHTTPServer, dashboard_root, prepare_runtime_data, refresh_dashboard_data
 
@@ -11,10 +13,22 @@ def main():
 	dashboard_root()
 	refresh_dashboard_data()
 	server = ThreadingHTTPServer(("127.0.0.1", PORT), DashboardHandler)
-	threading.Timer(0.8, lambda: webbrowser.open(f"http://127.0.0.1:{PORT}/index.html")).start()
-	print(f"KUIN-G dashboard: http://127.0.0.1:{PORT}/index.html")
+	url = f"http://127.0.0.1:{PORT}/index.html"
+	threading.Timer(1.0, lambda: webbrowser.open(url)).start()
+	print(f"KUIN-G dashboard: {url}")
 	server.serve_forever()
 
 
 if __name__ == "__main__":
-	main()
+	try:
+		main()
+	except Exception as error:
+		log_path = Path(__file__).resolve().parent / "startup_error.log"
+		log_path.write_text(traceback.format_exc(), encoding="utf-8")
+		message = f"KUIN-G could not start.\n\n{error}\n\nDetails: {log_path}"
+		try:
+			import tkinter.messagebox
+			tkinter.messagebox.showerror("KUIN-G startup error", message)
+		except Exception:
+			print(message)
+		input("Press Enter to close...")
