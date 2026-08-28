@@ -276,5 +276,6 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 
 if __name__ == "__main__":
     prepare_runtime_data()
+    refresh_dashboard_data()
     print(f"Dashboard: http://127.0.0.1:{PORT}/index.html")
     ThreadingHTTPServer(("127.0.0.1", PORT), DashboardHandler).serve_forever()
