@@ -24,11 +24,20 @@ document.getElementById('login-form').addEventListener('submit', async (event) =
   event.preventDefault();
   const role = document.getElementById('login-role').value;
   const password = document.getElementById('login-password').value;
-  const response = await originalFetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ role, password }) });
-  if (!response.ok) { document.getElementById('login-message').textContent = 'Invalid role or password.'; return; }
-  auth.role = role; auth.password = password; applyRole();
+  const message = document.getElementById('login-message');
+  message.textContent = '';
+  try {
+    const response = await originalFetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' }, body: JSON.stringify({ role, password }) });
+    if (!response.ok) { message.textContent = 'Invalid role or password.'; return; }
+    auth.role = role; auth.password = password; applyRole();
+  } catch (error) {
+    message.textContent = 'Unable to connect to the KUIN-G server. Restart KUIN-G.exe.';
+  }
 });
-document.getElementById('logout-button').addEventListener('click', () => { auth.role = ''; auth.password = ''; applyRole(); });
+document.getElementById('logout-button').addEventListener('click', () => {
+  auth.role = ''; auth.password = '';
+  window.location.replace(`/index.html?session=${Date.now()}`);
+});
 document.getElementById('password-button').addEventListener('click', () => document.getElementById('password-dialog').showModal());
 document.getElementById('password-cancel').addEventListener('click', () => document.getElementById('password-dialog').close());
 document.getElementById('password-form').addEventListener('submit', async (event) => {
