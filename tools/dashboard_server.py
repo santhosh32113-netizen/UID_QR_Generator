@@ -199,6 +199,8 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 raise PermissionError("Valid User or Admin login required")
             length = int(self.headers.get("Content-Length", "0"))
             record = json.loads(self.rfile.read(length))
+            record.pop("Drone ID", None)
+            record.pop("KUIN-G", None)
             workbook = load_workbook(WORKBOOK)
             worksheet = workbook.active
             headers = [cell.value for cell in worksheet[2]]
