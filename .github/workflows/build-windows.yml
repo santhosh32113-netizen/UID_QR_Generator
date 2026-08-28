@@ -1,0 +1,39 @@
+name: Build Windows package
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+
+      - name: Build executable package
+        run: pyinstaller --noconfirm --clean --onedir --name KUIN-G --add-data "dashboard;dashboard" --add-data "input;input" --add-data "output;output" --add-data "qr_codes;qr_codes" UID.py
+
+      - name: Create ZIP package
+        shell: pwsh
+        run: Compress-Archive -Path dist/KUIN-G -DestinationPath dist/KUIN-G-Windows.zip
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: KUIN-G-Windows
+          path: dist/KUIN-G-Windows.zip
+          if-no-files-found: error

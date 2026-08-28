@@ -1,0 +1,15 @@
+.DS_Store
+__pycache__/
+*.py[cod]
+venv/
+.env
+*.log
+passwords.json
+
+test_key.bin
+
+dashboard/uploads/*
+!dashboard/uploads/.gitkeep
+
+# Temporary Excel lock files
+output/~$*.xlsx
