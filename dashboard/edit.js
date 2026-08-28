@@ -20,6 +20,9 @@ function openEdit(droneId) {
   const ewMode = document.getElementById('edit-ew-mode');
   ewMode.value = editingRecord['Anti Ew'] && editingRecord['Anti Ew'] !== 'Nil' ? 'resilient' : 'none';
   updateEditEwMode();
+  const fund = document.getElementById('edit-proc-fund');
+  fund.replaceChildren(...[...new Set(['ATG', 'Regtl', 'Unit', 'Central', ...fleetData.map((row) => row['Proc Fund']).filter(Boolean)])].sort().map((value) => new Option(value, value)));
+  fund.value = editingRecord['Proc Fund'] || '';
   document.getElementById('edit-dialog').showModal();
 }
 function updateEditEwMode() {

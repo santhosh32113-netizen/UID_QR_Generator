@@ -3,7 +3,7 @@ fleetData.forEach(row=>{if(row.Serv==='Ser')row.Serv='Svc';if(row.Serv==='Unser'
 const $=id=>document.getElementById(id);
 const fields=[['Drone Name','text'],['Type','select'],['Form Factor','select'],['OEM','select'],['Range','select'],['Weight (KG)','number'],['Endurance (min)','number'],['C2 Link Frequency','select'],['Proc Fund','select'],['Serv','select'],['Cost (in Thousands)','number'],['Image Front','file'],['Image Back','file'],['Image Top','file'],['Image Bottom','file'],['Unit','select'],['Brigade','select'],['Division','select'],['Corps','select'],['Command','select']];
 const fixed={Range:['< 5 km','5-10 km','10-30 km','31-100 km','> 100 km'],'C2 Link Frequency':['1.4 GHz','2.4 GHz','5.8 GHz','900 MHz'],'Proc Fund':['ATG','Regtl','Unit','Central'],'Anti Ew':['Nil'],Serv:['Ser','Unser']};
-const options=field=>[...new Set([...(fixed[field]||[]),...fleetData.map(row=>row[field]).filter(Boolean)])].sort();
+const options=field=>field==='Serv' ? ['Ser','Unser'] : [...new Set([...(fixed[field]||[]),...fleetData.map(row=>row[field]).filter(Boolean)])].sort();
 const fragment=(value,length)=>String(value||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,length).padEnd(length,'X');
 const nextSerial=()=>fleetData.reduce((max,row)=>Math.max(max,Number(row['Ser No'])||0),0)+1;
 function makeDroneId(value){const base=[fragment(value.Command,2),fragment(value.Corps,2),fragment(value.Division,3),fragment(value.Brigade,4),fragment(value.Unit,4),fragment(value['Drone Name'],3),fragment(value.Type,3),String(value['Ser No']||1).padStart(2,'0')].join('-');const repeat=fleetData.filter(row=>row['Drone ID']===base||String(row['Drone ID']||'').startsWith(`${base}-`)).length;return repeat?`${base}-${String(repeat+1).padStart(2,'0')}`:base}
