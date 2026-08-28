@@ -204,7 +204,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             workbook = load_workbook(WORKBOOK)
             worksheet = workbook.active
             headers = [cell.value for cell in worksheet[2]]
-            required = [header for header in headers if header not in ("Ser No", "Drone ID", "KUIN-G", "Image Front", "Image Back", "Image Top", "Image Bottom")]
+            required = [header for header in headers if header not in ("Ser No", "Drone ID", "KUIN-G", "Payload Description", "Image Front", "Image Back", "Image Top", "Image Bottom")]
             missing = [header for header in required if str(record.get(header, "")).strip() == ""]
             if missing:
                 raise ValueError(f"Missing fields: {', '.join(missing)}")
