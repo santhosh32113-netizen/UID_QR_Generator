@@ -6,7 +6,15 @@ Offline asset register and QR generator for Windows deployment.
 
 The GitHub Actions workflow builds the application on a Windows runner. Run it manually from the **Actions** tab, or push a version tag such as `v1.0.0`.
 
-The workflow publishes the `KUIN-G-Windows` artifact. Download it and extract it once on the standalone Windows PC, then run `KUIN-G.exe` from a writable folder such as `C:\KUIN-G`. Keep the complete extracted `KUIN-G` folder together; do not move only the EXE. The package keeps `dashboard\`, `input\`, `output\`, and `qr_codes\` beside the EXE; the application saves data in `input\Sample.xlsx`, `output\`, and `qr_codes\`.
+The workflow publishes the `KUIN-G-Windows` artifact. Download it and extract it once on the standalone Windows PC or pendrive, then run `KUIN-G.exe` from the extracted folder. Keep the complete extracted `KUIN-G-Windows` folder together; do not move only the EXE. The package keeps `dashboard\`, `input\`, `output\`, and `qr_codes\` beside the EXE, and saves to paths relative to that folder:
+
+```text
+<drive>:\KUIN-G-Windows\input\Sample.xlsx
+<drive>:\KUIN-G-Windows\output\
+<drive>:\KUIN-G-Windows\qr_codes\
+```
+
+The USB drive must not be write-protected. Do not use a hard-coded `C:\Users\user\Desktop\...` path.
 
 ## Local development
 

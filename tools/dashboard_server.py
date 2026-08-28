@@ -14,7 +14,7 @@ from urllib.parse import unquote
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-from openpyxl import load_workbook
+from openpyxl import Workbook, load_workbook
 
 APP_ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parents[1]
 RESOURCE_ROOT = Path(getattr(sys, "_MEIPASS", APP_ROOT))
@@ -34,6 +34,9 @@ PASSWORD_FILE = ROOT / "passwords.json"
 
 
 def prepare_runtime_data() -> None:
+    APP_ROOT.mkdir(parents=True, exist_ok=True)
+    if not os.access(APP_ROOT, os.W_OK):
+        raise PermissionError(f"KUIN-G folder is not writable: {APP_ROOT}")
     for relative_path in (
         Path("input") / "Sample.xlsx",
         Path("output") / "master_register.xlsx",
@@ -45,7 +48,7 @@ def prepare_runtime_data() -> None:
         if not destination.exists() and bundled.exists():
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(bundled, destination)
-    for directory in (APP_ROOT / "input", APP_ROOT / "output", APP_ROOT / "qr_codes"):
+    for directory in (APP_ROOT / "input", APP_ROOT / "output", APP_ROOT / "qr_codes", APP_ROOT / "dashboard" / "uploads"):
         directory.mkdir(parents=True, exist_ok=True)
 
 
@@ -60,6 +63,42 @@ def dashboard_root() -> Path:
 
 def refresh_dashboard_data():
     write_outputs(load_records())
+
+
+def rebuild_registers_from_workbook() -> None:
+    workbook = load_workbook(WORKBOOK, read_only=True, data_only=True)
+    worksheet = workbook.active
+    headers = [cell.value for cell in worksheet[2]]
+    records = [
+        dict(zip(headers, values))
+        for values in worksheet.iter_rows(min_row=3, values_only=True)
+        if values[1] not in (None, "")
+    ]
+    workbook.close()
+
+    kuin_values = [record["KUIN-G"] for record in records]
+    master = Workbook()
+    master_sheet = master.active
+    master_sheet.title = "Master Register"
+    master_sheet.append(["Drone ID", "KUIN-G"])
+    qr_records = []
+    for record in records:
+        kuin = record["KUIN-G"]
+        master_sheet.append([record["Drone ID"], kuin])
+        qr_records.append({
+            "Drone ID": record["Drone ID"],
+            "KUIN-G": kuin,
+            "QR PNG File": f"{kuin}.png",
+            "QR SVG File": f"{kuin}.svg",
+        })
+    MASTER.parent.mkdir(parents=True, exist_ok=True)
+    master.save(MASTER)
+    master.close()
+    QR_DIR.mkdir(parents=True, exist_ok=True)
+    write_distributable_workbook(ROOT / "output" / "distributable_register.xlsx", kuin_values, QR_DIR)
+    remove_orphan_qr_files(QR_DIR, kuin_values)
+    write_qr_register(REGISTER, qr_records)
+    refresh_dashboard_data()
 
 
 def load_passwords():
@@ -143,7 +182,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                     worksheet.cell(row_number, headers.index(field) + 1, value)
                 workbook.save(WORKBOOK)
                 workbook.close()
-                refresh_dashboard_data()
+                rebuild_registers_from_workbook()
                 self._send_json(200, {"updated": drone_id, "changes": changes})
             except Exception as error:
                 self._send_json(403 if isinstance(error, PermissionError) else 400, {"error": str(error)})
@@ -195,28 +234,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             QR_DIR.mkdir(exist_ok=True)
             create_qr_png(record["KUIN-G"], QR_DIR / f"{record['KUIN-G']}.png")
             create_qr_svg(record["KUIN-G"], QR_DIR / f"{record['KUIN-G']}.svg")
-            master = load_workbook(MASTER)
-            master_sheet = master.active
-            master_row = master_sheet.max_row + 1
-            master_sheet.cell(row=master_row, column=1, value=record["Drone ID"])
-            master_sheet.cell(row=master_row, column=2, value=record["KUIN-G"])
-            master.save(MASTER)
-            master.close()
-            master = load_workbook(MASTER, read_only=True, data_only=True)
-            master_sheet = master.active
-            all_kuin = [master_sheet.cell(row=row, column=2).value for row in range(2, master_sheet.max_row + 1)]
-            qr_records = [
-                {"Drone ID": master_sheet.cell(row=row, column=1).value,
-                 "KUIN-G": master_sheet.cell(row=row, column=2).value,
-                 "QR PNG File": f"{master_sheet.cell(row=row, column=2).value}.png",
-                 "QR SVG File": f"{master_sheet.cell(row=row, column=2).value}.svg"}
-                for row in range(2, master_sheet.max_row + 1)
-            ]
-            master.close()
-            write_distributable_workbook(ROOT / "output" / "distributable_register.xlsx", all_kuin, QR_DIR)
-            remove_orphan_qr_files(QR_DIR, all_kuin)
-            write_qr_register(REGISTER, qr_records)
-            refresh_dashboard_data()
+            rebuild_registers_from_workbook()
             response_record = dict(record)
             response_record["Serv"] = "Svc" if record["Serv"] == "Ser" else "Unsvc"
             self._send_json(201, {"record": response_record, "kuin": record["KUIN-G"]})
@@ -239,28 +257,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             worksheet.delete_rows(row_to_delete)
             workbook.save(WORKBOOK)
             workbook.close()
-            master = load_workbook(MASTER)
-            master_sheet = master.active
-            master_row = next((row for row in range(2, master_sheet.max_row + 1) if str(master_sheet.cell(row, 1).value) == drone_id), None)
-            if master_row:
-                master_sheet.delete_rows(master_row)
-            master.save(MASTER)
-            master.close()
-            master = load_workbook(MASTER, read_only=True, data_only=True)
-            sheet = master.active
-            kuin_values = [sheet.cell(row=row, column=2).value for row in range(2, sheet.max_row + 1)]
-            qr_records = [
-                {"Drone ID": sheet.cell(row=row, column=1).value,
-                 "KUIN-G": sheet.cell(row=row, column=2).value,
-                 "QR PNG File": f"{sheet.cell(row=row, column=2).value}.png",
-                 "QR SVG File": f"{sheet.cell(row=row, column=2).value}.svg"}
-                for row in range(2, sheet.max_row + 1)
-            ]
-            master.close()
-            write_distributable_workbook(ROOT / "output" / "distributable_register.xlsx", kuin_values, QR_DIR)
-            remove_orphan_qr_files(QR_DIR, kuin_values)
-            write_qr_register(REGISTER, qr_records)
-            refresh_dashboard_data()
+            rebuild_registers_from_workbook()
             self._send_json(200, {"deleted": drone_id})
         except Exception as error:
             self._send_json(403 if isinstance(error, PermissionError) else 400, {"error": str(error)})
