@@ -208,10 +208,7 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 raise ValueError(f"Missing fields: {', '.join(missing)}")
             existing_ids = {str(worksheet.cell(row=row, column=2).value).strip() for row in range(3, worksheet.max_row + 1)}
             record["Ser No"] = max([int(worksheet.cell(row=row, column=1).value or 0) for row in range(3, worksheet.max_row + 1)] or [0]) + 1
-            expected_id = hierarchy_id(record, existing_ids)
-            if record.get("Drone ID") != expected_id:
-                raise ValueError("Drone ID does not match the selected hierarchy")
-            record["Drone ID"] = expected_id
+            record["Drone ID"] = hierarchy_id(record, existing_ids)
             record["KUIN-G"] = make_kuin(record["Drone ID"])
             for image_field in ("Image Front", "Image Back", "Image Top", "Image Bottom"):
                 image_data = record.get(image_field, "")
