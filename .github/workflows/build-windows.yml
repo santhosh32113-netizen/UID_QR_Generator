@@ -27,13 +27,9 @@ jobs:
       - name: Build executable package
         run: pyinstaller --noconfirm --clean --console --onedir --contents-directory . --name KUIN-G --hidden-import=tools.dashboard_server --hidden-import=tools.create_dashboard_data --hidden-import=src.generate_UIDS --add-data "dashboard;dashboard" --add-data "input;input" --add-data "output;output" --add-data "qr_codes;qr_codes" UID.py
 
-      - name: Create ZIP package
-        shell: pwsh
-        run: Compress-Archive -Path dist/KUIN-G -DestinationPath dist/KUIN-G-Windows.zip
-
       - name: Upload Windows package
         uses: actions/upload-artifact@v4
         with:
           name: KUIN-G-Windows
-          path: dist/KUIN-G-Windows.zip
+          path: dist/KUIN-G
           if-no-files-found: error
