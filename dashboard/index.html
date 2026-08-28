@@ -80,7 +80,7 @@
         </section>
 
         <section class="content-grid">
-          <article class="panel capability-panel"><div class="panel-heading"><div><span class="panel-kicker">CAPABILITY MIX</span><h3>What the fleet is built to do</h3></div><button class="quiet-button" title="Capability data">⋮</button></div><div id="type-bars" class="bar-list"></div></article>
+          <article class="panel capability-panel"><div class="panel-heading"><div><span class="panel-kicker">CAPABILITY MIX</span><h3>What the fleet is built to do</h3></div><button class="quiet-button" title="Capability data">⋮</button></div><div id="type-bars" class="bar-list"></div></article><article class="panel capability-panel"><div class="panel-heading"><div><span class="panel-kicker">PROCUREMENT FUNDING</span><h3>Proc Fund distribution</h3></div></div><div id="proc-fund-bars" class="bar-list"></div></article>
           <article class="panel readiness-panel"><div class="panel-heading"><div><span class="panel-kicker">SERVICEABILITY</span><h3>Availability at a glance</h3></div><span class="pill good">SAMPLE REGISTER</span></div><div class="service-chart"><div class="donut" id="service-donut"><div><strong id="donut-readiness">0%</strong><span>ready</span></div></div><div class="legend" id="service-legend"></div></div><div class="service-foot"><span>Largest attention group</span><strong id="largest-attention">Unsvc · 0 assets</strong></div></article>
         </section>
 
@@ -114,6 +114,11 @@
       <span id="edit-message" role="status"></span>
       <div class="form-actions"><button type="button" class="quiet-button" id="edit-cancel">Cancel</button><button type="submit" class="primary-button">Save changes</button></div>
     </form>
+  </dialog>
+  <dialog id="details-dialog" class="password-dialog details-dialog">
+    <h2>Complete asset record</h2>
+    <dl id="details-content" class="details-grid"></dl>
+    <div class="form-actions"><button type="button" class="quiet-button" onclick="document.getElementById('details-dialog').close()">Close</button></div>
   </dialog>
   <script src="data.js?v=edit-1"></script>
   <script src="app.js?v=payload-layout-1"></script>

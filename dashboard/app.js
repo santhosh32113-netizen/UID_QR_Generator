@@ -2,7 +2,7 @@ const fleetData=window.dashboardData||[];
 fleetData.forEach(row=>{if(row.Serv==='Ser')row.Serv='Svc';if(row.Serv==='Unser')row.Serv='Unsvc'});
 const $=id=>document.getElementById(id);
 const fields=[['Drone Name','text'],['Type','select'],['Form Factor','select'],['OEM','select'],['Range','select'],['Weight (KG)','number'],['Endurance (min)','number'],['C2 Link Frequency','select'],['Proc Fund','select'],['Serv','select'],['Cost (in Thousands)','number'],['Image Front','file'],['Image Back','file'],['Image Top','file'],['Image Bottom','file'],['Unit','select'],['Brigade','select'],['Division','select'],['Corps','select'],['Command','select']];
-const fixed={Range:['< 5 km','5-10 km','10-30 km','31-100 km','> 100 km'],'C2 Link Frequency':['1.4 GHz','2.4 GHz','5.8 GHz','900 MHz'],Serv:['Ser','Unser']};
+const fixed={Range:['< 5 km','5-10 km','10-30 km','31-100 km','> 100 km'],'C2 Link Frequency':['1.4 GHz','2.4 GHz','5.8 GHz','900 MHz'],'Proc Fund':['ATG','Regtl','Unit','Central'],Serv:['Ser','Unser']};
 const options=field=>fixed[field]||[...new Set(fleetData.map(row=>row[field]).filter(Boolean))].sort();
 const fragment=(value,length)=>String(value||'').replace(/[^A-Za-z0-9]/g,'').toUpperCase().slice(0,length).padEnd(length,'X');
 const nextSerial=()=>fleetData.reduce((max,row)=>Math.max(max,Number(row['Ser No'])||0),0)+1;
@@ -13,6 +13,7 @@ function renderOverview(){const total=fleetData.length,ready=fleetData.filter(ro
 function renderBars(target,data,total){$(target).innerHTML=data.map(([name,count])=>`<div class="bar-row"><span>${name}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.max(2,count/total*100)}%"></div></div><strong>${count}</strong></div>`).join('')}
 function renderService(){const total=fleetData.length||1;$('service-legend').innerHTML=[['Serviceable','Svc'],['Unserviceable','Unsvc'],['Decommissioned','Decommissioned']].map(([label,key])=>{const count=fleetData.filter(row=>row.Serv===key).length;return `<div class="legend-row"><span>${label}</span><strong>${count} <small>${(count/total*100).toFixed(1)}%</small></strong></div>`}).join('')}
 function renderGuidance(){$('guidance-list').innerHTML=countBy('Guidance').map(([name,count])=>`<div class="guidance-item"><span>${name}</span><strong>${count}</strong></div>`).join('')}
+function renderProcFund(){renderBars('proc-fund-bars',countBy('Proc Fund'),fleetData.length)}
 function renderEWProfiles(){const profiles=countBy('Anti Ew');renderBars('ew-profile-bars',profiles,fleetData.length)}
 function renderUnits(filter='all'){const rows=fleetData.filter(row=>filter==='all'||row.Brigade===filter);const groups=[...new Set(rows.map(row=>`${row.Unit}|${row.Brigade}`))].map(key=>{const [unit,brigade]=key.split('|'),unitRows=rows.filter(row=>row.Unit===unit);return [unit,brigade,unitRows.length,unitRows.filter(row=>row.Serv==='Svc').length]});$('unit-table').innerHTML='<div class="table-head"><span>UNIT</span><span>BRIGADE</span><span>HOLDINGS</span><span>READY</span></div>'+groups.map(row=>`<div class="table-row"><strong>${row[0]}</strong><small>${row[1]}</small><span>${row[2]}</span><span class="ready">${row[3]}</span></div>`).join('')}
 function filterValue(id){return $(id)?.value||'all'}
