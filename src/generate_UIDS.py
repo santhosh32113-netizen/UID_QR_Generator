@@ -28,7 +28,7 @@ import unicodedata
 from pathlib import Path
 
 import qrcode
-from qrcode.image.svg import SvgImage
+from qrcode.image.svg import SvgPathImage
 from openpyxl import Workbook, load_workbook
 from openpyxl.drawing.image import Image as XLImage
 from openpyxl.styles import Font, PatternFill, Alignment
@@ -152,7 +152,7 @@ def create_qr_svg(kuin: str, output_path: Path) -> None:
         error_correction=qrcode.constants.ERROR_CORRECT_M,
         box_size=10,
         border=4,
-        image_factory=SvgImage,
+        image_factory=SvgPathImage,
     )
     qr.add_data(kuin)
     qr.make(fit=True)

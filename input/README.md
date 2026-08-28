@@ -24,6 +24,6 @@ python src/generate_UIDS.py \
 Notes:
 - The code that enforces the layout is in `src/generate_UIDS.py`.
 - Each KUIN-G QR is saved as `qr_codes/<KUIN-G>.png`.
-- Each KUIN-G QR is also saved as `qr_codes/<KUIN-G>.svg` for CAD and print workflows.
+- Each KUIN-G QR is also saved as a path-based `qr_codes/<KUIN-G>.svg` for CAD and print workflows.
 - The tracking register is saved as `output/qr_register.csv`.
 - If you need a sample file, run `tools/create_sample_input.py` to create `input/sample.xlsx`.
