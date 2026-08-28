@@ -8,6 +8,7 @@ import base64
 import hashlib
 import os
 import re
+import shutil
 import sys
 from urllib.parse import unquote
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
@@ -30,6 +31,22 @@ REGISTER = ROOT / "output" / "qr_register.csv"
 UPLOAD_DIR = ROOT / "dashboard" / "uploads"
 PORT = 8765
 PASSWORD_FILE = ROOT / "passwords.json"
+
+
+def prepare_runtime_data() -> None:
+    for relative_path in (
+        Path("input") / "Sample.xlsx",
+        Path("output") / "master_register.xlsx",
+        Path("output") / "distributable_register.xlsx",
+        Path("output") / "qr_register.csv",
+    ):
+        destination = APP_ROOT / relative_path
+        bundled = RESOURCE_ROOT / relative_path
+        if not destination.exists() and bundled.exists():
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(bundled, destination)
+    for directory in (APP_ROOT / "input", APP_ROOT / "output", APP_ROOT / "qr_codes"):
+        directory.mkdir(parents=True, exist_ok=True)
 
 
 def dashboard_root() -> Path:
@@ -258,5 +275,6 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 
 
 if __name__ == "__main__":
+    prepare_runtime_data()
     print(f"Dashboard: http://127.0.0.1:{PORT}/index.html")
     ThreadingHTTPServer(("127.0.0.1", PORT), DashboardHandler).serve_forever()
