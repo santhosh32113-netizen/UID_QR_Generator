@@ -21,7 +21,7 @@ RESOURCE_ROOT = Path(getattr(sys, "_MEIPASS", APP_ROOT))
 ROOT = APP_ROOT
 sys.path.insert(0, str(ROOT))
 
-from src.generate_UIDS import create_qr_png, create_qr_svg, make_kuin, remove_orphan_qr_files, write_distributable_workbook, write_qr_register
+from src.generate_UIDS import create_qr_png, create_qr_svg, make_kuin, remove_orphan_qr_files, write_distributable_workbook, write_qr_register, write_qr_stl_backup
 from tools.create_dashboard_data import load_records, write_outputs
 
 WORKBOOK = ROOT / "input" / "Sample.xlsx"
@@ -48,7 +48,7 @@ def prepare_runtime_data() -> None:
         if not destination.exists() and bundled.exists():
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(bundled, destination)
-    for directory in (APP_ROOT / "input", APP_ROOT / "output", APP_ROOT / "qr_codes", APP_ROOT / "dashboard" / "uploads"):
+    for directory in (APP_ROOT / "input", APP_ROOT / "output", APP_ROOT / "qr_codes", APP_ROOT / "qr_stl_backup", APP_ROOT / "dashboard" / "uploads"):
         directory.mkdir(parents=True, exist_ok=True)
 
 
@@ -90,6 +90,7 @@ def rebuild_registers_from_workbook() -> None:
             "KUIN-G": kuin,
             "QR PNG File": f"{kuin}.png",
             "QR SVG File": f"{kuin}.svg",
+            "QR STL File": f"{kuin}.stl",
         })
     MASTER.parent.mkdir(parents=True, exist_ok=True)
     master.save(MASTER)
@@ -97,6 +98,7 @@ def rebuild_registers_from_workbook() -> None:
     QR_DIR.mkdir(parents=True, exist_ok=True)
     write_distributable_workbook(ROOT / "output" / "distributable_register.xlsx", kuin_values, QR_DIR)
     remove_orphan_qr_files(QR_DIR, kuin_values)
+    write_qr_stl_backup(ROOT / "qr_stl_backup", kuin_values)
     write_qr_register(REGISTER, qr_records)
     refresh_dashboard_data()
 
@@ -121,7 +123,7 @@ def fragment(value, length):
 def hierarchy_id(record, existing_ids):
     base = "-".join([
         fragment(record["Command"], 2), fragment(record["Corps"], 2),
-        fragment(record["Brigade"], 4), fragment(record["Unit"], 4),
+        fragment(record["Division"], 3), fragment(record["Brigade"], 4), fragment(record["Unit"], 4),
         fragment(record["Drone Name"], 3), fragment(record["Type"], 3),
         f"{int(record.get('Ser No') or 1):02d}",
     ])

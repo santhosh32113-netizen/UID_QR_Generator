@@ -13,7 +13,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 ROOT = Path(__file__).resolve().parents[1]
 import sys
 sys.path.insert(0, str(ROOT))
-from src.generate_UIDS import make_kuin, remove_orphan_qr_files, write_distributable_workbook, write_qr_register
+from src.generate_UIDS import make_kuin, remove_orphan_qr_files, write_distributable_workbook, write_qr_register, write_qr_stl_backup
 
 SOURCE = ROOT / "input" / "Sample.xlsx"
 HEADERS = [
@@ -41,7 +41,7 @@ def fragment(value: object, length: int) -> str:
 def hierarchy_id(row: dict[str, object], occurrence: int) -> str:
     base = "-".join([
         fragment(row["Command"], 2), fragment(row["Corps"], 2),
-        fragment(row["Brigade"], 4), fragment(row["Unit"], 4),
+        fragment(row["Division"], 3), fragment(row["Brigade"], 4), fragment(row["Unit"], 4),
         fragment(row["Drone Name"], 3), fragment(row["Type"], 3),
         f"{int(row['Ser No'] or 0):02d}",
     ])
@@ -98,7 +98,7 @@ def main() -> None:
         row["Image Back"] = old.get("Image Back", "")
         row["Image Top"] = old.get("Image Top", "")
         row["Image Bottom"] = old.get("Image Bottom", "")
-        base = "-".join([fragment(row["Command"], 2), fragment(row["Corps"], 2), fragment(row["Brigade"], 4), fragment(row["Unit"], 4), fragment(row["Drone Name"], 3), fragment(row["Type"], 3), f"{int(row['Ser No'] or 0):02d}"])
+        base = "-".join([fragment(row["Command"], 2), fragment(row["Corps"], 2), fragment(row["Division"], 3), fragment(row["Brigade"], 4), fragment(row["Unit"], 4), fragment(row["Drone Name"], 3), fragment(row["Type"], 3), f"{int(row['Ser No'] or 0):02d}"])
         occurrences[base] += 1
         row["Drone ID"] = hierarchy_id(row, occurrences[base])
         row["KUIN-G"] = make_kuin(row["Drone ID"])
@@ -137,10 +137,12 @@ def main() -> None:
         kuin = values[-1]
         master_sheet.append([values[1], kuin])
         qr_records.append({"Drone ID": values[1], "KUIN-G": kuin,
-                   "QR PNG File": f"{kuin}.png", "QR SVG File": f"{kuin}.svg"})
+                   "QR PNG File": f"{kuin}.png", "QR SVG File": f"{kuin}.svg",
+                   "QR STL File": f"{kuin}.stl"})
     master.save(ROOT / "output" / "master_register.xlsx")
     write_distributable_workbook(ROOT / "output" / "distributable_register.xlsx", kuin_values, qr_dir)
     remove_orphan_qr_files(qr_dir, kuin_values)
+    write_qr_stl_backup(ROOT / "qr_stl_backup", kuin_values)
     write_qr_register(ROOT / "output" / "qr_register.csv", qr_records)
     print(f"Migrated {len(rows)} records to {len(HEADERS)} fields")
 
