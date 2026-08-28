@@ -28,7 +28,7 @@
         <button class="nav-item admin-only" data-view="fleet"><span class="nav-icon">◈</span>Register</button>
         <button class="nav-item admin-only" data-view="fleet"><span class="nav-icon">×</span>Delete asset</button>
       </nav>
-      <div class="sidebar-foot"><span class="status-dot"></span><span>Sample register loaded</span><small>23 Aug 2026 · local view</small></div>
+      <div class="sidebar-foot"><span class="status-dot"></span><span>Sample register loaded</span><small id="sidebar-reconciliation">Loading timestamp...</small></div>
     </aside>
 
     <main class="main-content">
@@ -47,7 +47,7 @@
       </header>
 
       <section class="context-strip">
-        <div><span class="context-label">LAST RECONCILIATION</span><strong>23 Aug 2026 · 09:40</strong></div>
+        <div><span class="context-label">LAST RECONCILIATION</span><strong id="last-reconciliation">Loading timestamp...</strong></div>
         <div><span class="context-label">COVERAGE</span><strong id="coverage-summary">0 records · 0 units</strong></div>
         <div class="context-alert"><span class="alert-mark">!</span><span><strong id="attention-count">0</strong> require attention</span></div>
       </section>
@@ -124,7 +124,7 @@
     <div class="form-actions"><button type="button" class="quiet-button" onclick="document.getElementById('details-dialog').close()">Close</button></div>
   </dialog>
   <script src="data.js?v=edit-1"></script>
-  <script src="app.js?v=ew-mode-1"></script>
+  <script src="app.js?v=timestamp-1"></script>
   <script src="ew-control.js?v=ew-mode-1"></script>
   <script src="auth.js?v=roles-5"></script>
   <script src="edit.js?v=kuin-final-1"></script>
