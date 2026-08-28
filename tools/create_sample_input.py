@@ -20,6 +20,7 @@ CONTROLLED_VALUES = {
     "Range": ["< 5 km", "5-10 km", "10-30 km", "31-100 km", "> 100 km"],
     "C2 Link Frequency": ["1.4 GHz", "2.4 GHz", "5.8 GHz", "900 MHz"],
     "Proc Fund": ["ATG", "Regtl", "Unit", "Central"],
+    "Anti Ew": ["Nil"],
     "Serv": ["Ser", "Unser"],
 }
 
