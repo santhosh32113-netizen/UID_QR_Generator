@@ -73,7 +73,7 @@ def validate_input_workbook(input_path: Path) -> list[object]:
             values.append(value)
 
         if not values:
-            raise ValueError("No Existing ID values were found below B2.")
+            raise ValueError("No Drone ID values were found below B2.")
 
         return values
     finally:
@@ -88,7 +88,7 @@ def ensure_unique_ids(values: list[object]) -> None:
 
         if normalized in seen:
             raise ValueError(
-                f"Duplicate Existing ID after normalization: {value!r}. "
+                f"Duplicate Drone ID after normalization: {value!r}. "
                 f"First occurrence was row {seen[normalized]}; "
                 f"duplicate is row {row_number}."
             )
@@ -160,10 +160,54 @@ def create_qr_svg(kuin: str, output_path: Path) -> None:
     qr.make_image().save(output_path)
 
 
+def qr_matrix(kuin: str):
+    qr = qrcode.QRCode(version=None, error_correction=qrcode.constants.ERROR_CORRECT_M, border=4)
+    qr.add_data(kuin)
+    qr.make(fit=True)
+    return qr.get_matrix()
+
+
+def create_qr_stl(kuin: str, output_path: Path) -> None:
+    matrix = qr_matrix(kuin)
+    module_size = 1.0
+    base_height = 0.4
+    module_height = 0.6
+    size = len(matrix) * module_size
+    triangles = []
+
+    def add_box(x, y, width, height):
+        vertices = [
+            (x, y, base_height), (x + width, y, base_height),
+            (x + width, y + width, base_height), (x, y + width, base_height),
+            (x, y, height), (x + width, y, height),
+            (x + width, y + width, height), (x, y + width, height),
+        ]
+        faces = [(0, 1, 2), (0, 2, 3), (4, 6, 5), (4, 7, 6),
+                 (0, 4, 5), (0, 5, 1), (1, 5, 6), (1, 6, 2),
+                 (2, 6, 7), (2, 7, 3), (3, 7, 4), (3, 4, 0)]
+        triangles.extend([(vertices[a], vertices[b], vertices[c]) for a, b, c in faces])
+
+    add_box(0, 0, size, base_height)
+    for row, values in enumerate(matrix):
+        for column, dark in enumerate(values):
+            if dark:
+                add_box(column * module_size, (len(matrix) - row - 1) * module_size, module_size, base_height + module_height)
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with output_path.open("w", encoding="ascii") as stl:
+        stl.write(f"solid KUIN_G_{kuin}\n")
+        for first, second, third in triangles:
+            stl.write("  facet normal 0 0 0\n    outer loop\n")
+            for vertex in (first, second, third):
+                stl.write(f"      vertex {vertex[0]:.4f} {vertex[1]:.4f} {vertex[2]:.4f}\n")
+            stl.write("    endloop\n  endfacet\n")
+        stl.write(f"endsolid KUIN_G_{kuin}\n")
+
+
 def write_qr_register(output_path: Path, records) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with output_path.open("w", newline="", encoding="utf-8") as csv_file:
-        writer = csv.DictWriter(csv_file, fieldnames=["Drone ID", "KUIN-G", "QR PNG File", "QR SVG File"])
+        writer = csv.DictWriter(csv_file, fieldnames=["Drone ID", "KUIN-G", "QR PNG File", "QR SVG File", "QR STL File"])
         writer.writeheader()
         writer.writerows(records)
 
@@ -175,6 +219,20 @@ def remove_orphan_qr_files(qr_dir: Path, kuin_values) -> None:
             continue
         if path.name not in expected:
             path.unlink()
+
+
+def remove_orphan_stl_files(stl_dir: Path, kuin_values) -> None:
+    expected = {f"{kuin}.stl" for kuin in kuin_values}
+    for path in stl_dir.glob("*.stl"):
+        if path.name not in expected:
+            path.unlink()
+
+
+def write_qr_stl_backup(stl_dir: Path, kuin_values) -> None:
+    stl_dir.mkdir(parents=True, exist_ok=True)
+    for kuin in kuin_values:
+        create_qr_stl(kuin, stl_dir / f"{kuin}.stl")
+    remove_orphan_stl_files(stl_dir, kuin_values)
 
 
 def write_distributable_workbook(output_path: Path, kuin_values, qr_dir: Path) -> None:
@@ -228,10 +286,13 @@ def generate(
     write_master_workbook(master_output, values, kuin_values)
     write_distributable_workbook(distributable_output, kuin_values, qr_dir)
     remove_orphan_qr_files(qr_dir, kuin_values)
+    stl_dir = qr_dir.parent / "qr_stl_backup"
+    write_qr_stl_backup(stl_dir, kuin_values)
     write_qr_register(
         distributable_output.parent / "qr_register.csv",
                 [{"Drone ID": drone_id, "KUIN-G": kuin,
-                    "QR PNG File": f"{kuin}.png", "QR SVG File": f"{kuin}.svg"}
+                      "QR PNG File": f"{kuin}.png", "QR SVG File": f"{kuin}.svg",
+                      "QR STL File": f"{kuin}.stl"}
          for drone_id, kuin in zip(values, kuin_values)],
     )
 

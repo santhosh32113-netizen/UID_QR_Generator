@@ -26,4 +26,5 @@ Notes:
 - Each KUIN-G QR is saved as `qr_codes/<KUIN-G>.png`.
 - Each KUIN-G QR is also saved as a path-based `qr_codes/<KUIN-G>.svg` for CAD and print workflows.
 - The tracking register is saved as `output/qr_register.csv`.
+- A raised 3D backup is saved as `qr_stl_backup/<KUIN-G>.stl`.
 - If you need a sample file, run `tools/create_sample_input.py` to create `input/sample.xlsx`.

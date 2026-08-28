@@ -26,7 +26,7 @@ This creates:
 3. Use `Drone ID` as the asset-level table field.
 4. Add measures for row count, serviceable count, and total `Cost (in Thousands)`.
 
-The CSV intentionally contains the complete operational record. Keep the restricted `Existing ID | UID` master register out of the report dataset.
+The CSV intentionally contains the complete operational record. Keep the restricted `Drone ID | KUIN-G` master register out of the report dataset.
 
 Drone ID is not editable. It is generated from the first 2 characters of Command, first 2 of Corps, first 3 of Division, first 4 of Brigade, and first 4 of Unit. A numeric suffix is added when that prescribed abbreviated hierarchy repeats, preserving primary-key uniqueness.
 

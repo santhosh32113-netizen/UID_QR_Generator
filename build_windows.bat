@@ -10,6 +10,7 @@ pyinstaller --noconfirm --clean --console --onedir --contents-directory . --name
   --add-data "input;input" ^
   --add-data "output;output" ^
   --add-data "qr_codes;qr_codes" ^
+  --add-data "qr_stl_backup;qr_stl_backup" ^
   UID.py
 echo.
 echo Build complete: dist\KUIN-G\KUIN-G.exe

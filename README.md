@@ -32,5 +32,6 @@ Open `http://127.0.0.1:8765/index.html` in a browser.
 - `output/qr_register.csv`: QR tracking register
 - `qr_codes/<KUIN-G>.png`: printable QR image files
 - `qr_codes/<KUIN-G>.svg`: path-based scalable QR files for SolidWorks and print workflows
+- `qr_stl_backup/<KUIN-G>.stl`: raised 3D QR mesh backup for SolidWorks import
 
 The QR payload and filename are both KUIN-G. No separate UID is generated.
