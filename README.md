@@ -33,5 +33,8 @@ Open `http://127.0.0.1:8765/index.html` in a browser.
 - `qr_codes/<KUIN-G>.png`: printable QR image files
 - `qr_codes/<KUIN-G>.svg`: path-based scalable QR files for SolidWorks and print workflows
 - `qr_stl_backup/<KUIN-G>.stl`: raised 3D QR mesh backup for SolidWorks import
+- `archive/deleted_records/<timestamp>_<KUIN-G>/`: deleted record snapshot and QR assets
 
 The QR payload and filename are both KUIN-G. No separate UID is generated.
+
+The database is preserved during EXE upgrades on Windows under `%LOCALAPPDATA%\KUIN-G`. Deleted records are archived before removal and are not silently discarded.

@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import sys
 from collections import Counter
 from pathlib import Path
@@ -12,7 +13,7 @@ from pathlib import Path
 from openpyxl import load_workbook
 
 
-PROJECT_DIR = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parents[1]
+PROJECT_DIR = Path(os.environ.get("KUIN_G_DATA_ROOT", Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parents[1]))
 INPUT_FILE = PROJECT_DIR / "input" / "Sample.xlsx"
 DATA_FILE = PROJECT_DIR / "dashboard" / "data.js"
 CSV_FILE = PROJECT_DIR / "dashboard" / "fleet_register.csv"

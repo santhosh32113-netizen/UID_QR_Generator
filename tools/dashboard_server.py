@@ -18,38 +18,58 @@ from openpyxl import Workbook, load_workbook
 
 APP_ROOT = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parents[1]
 RESOURCE_ROOT = Path(getattr(sys, "_MEIPASS", APP_ROOT))
-ROOT = APP_ROOT
+DATA_ROOT = Path(os.environ.get("LOCALAPPDATA", APP_ROOT)) / "KUIN-G" if getattr(sys, "frozen", False) else APP_ROOT
+os.environ.setdefault("KUIN_G_DATA_ROOT", str(DATA_ROOT))
+ROOT = DATA_ROOT
 sys.path.insert(0, str(ROOT))
 
 from src.generate_UIDS import create_qr_png, create_qr_svg, make_kuin, remove_orphan_qr_files, write_distributable_workbook, write_qr_register, write_qr_stl_backup
 from tools.create_dashboard_data import load_records, write_outputs
 
-WORKBOOK = ROOT / "input" / "Sample.xlsx"
+WORKBOOK = DATA_ROOT / "input" / "Sample.xlsx"
 MASTER = ROOT / "output" / "master_register.xlsx"
 QR_DIR = ROOT / "qr_codes"
 REGISTER = ROOT / "output" / "qr_register.csv"
-UPLOAD_DIR = ROOT / "dashboard" / "uploads"
+UPLOAD_DIR = DATA_ROOT / "dashboard" / "uploads"
 PORT = 8765
-PASSWORD_FILE = ROOT / "passwords.json"
+PASSWORD_FILE = DATA_ROOT / "passwords.json"
+ARCHIVE_DIR = DATA_ROOT / "archive" / "deleted_records"
 
 
 def prepare_runtime_data() -> None:
     APP_ROOT.mkdir(parents=True, exist_ok=True)
-    if not os.access(APP_ROOT, os.W_OK):
-        raise PermissionError(f"KUIN-G folder is not writable: {APP_ROOT}")
+    DATA_ROOT.mkdir(parents=True, exist_ok=True)
+    if not os.access(DATA_ROOT, os.W_OK):
+        raise PermissionError(f"KUIN-G data folder is not writable: {DATA_ROOT}")
     for relative_path in (
         Path("input") / "Sample.xlsx",
         Path("output") / "master_register.xlsx",
         Path("output") / "distributable_register.xlsx",
         Path("output") / "qr_register.csv",
     ):
-        destination = APP_ROOT / relative_path
+        destination = DATA_ROOT / relative_path
+        existing = APP_ROOT / relative_path
         bundled = RESOURCE_ROOT / relative_path
+        if not destination.exists() and existing.exists() and existing != destination:
+            bundled = existing
         if not destination.exists() and bundled.exists():
             destination.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(bundled, destination)
-    for directory in (APP_ROOT / "input", APP_ROOT / "output", APP_ROOT / "qr_codes", APP_ROOT / "qr_stl_backup", APP_ROOT / "dashboard" / "uploads"):
+    for directory in (DATA_ROOT / "input", DATA_ROOT / "output", DATA_ROOT / "qr_codes", DATA_ROOT / "qr_stl_backup", DATA_ROOT / "dashboard" / "uploads", ARCHIVE_DIR):
         directory.mkdir(parents=True, exist_ok=True)
+
+
+def archive_deleted_record(record: dict, qr_dir: Path, stl_dir: Path) -> Path:
+    import datetime
+    stamp = datetime.datetime.now(datetime.timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    folder = ARCHIVE_DIR / f"{stamp}_{record['KUIN-G']}"
+    folder.mkdir(parents=True, exist_ok=False)
+    (folder / "record.json").write_text(json.dumps(record, indent=2, default=str), encoding="utf-8")
+    for directory, suffix in ((qr_dir, ".png"), (qr_dir, ".svg"), (stl_dir, ".stl")):
+        source = directory / f"{record['KUIN-G']}{suffix}"
+        if source.is_file():
+            shutil.copy2(source, folder / source.name)
+    return folder
 
 
 def dashboard_root() -> Path:
@@ -255,6 +275,9 @@ class DashboardHandler(SimpleHTTPRequestHandler):
             row_to_delete = next((row for row in range(3, worksheet.max_row + 1) if str(worksheet.cell(row, 2).value) == drone_id), None)
             if row_to_delete is None:
                 raise ValueError("Drone ID not found")
+            headers = [cell.value for cell in worksheet[2]]
+            deleted_record = dict(zip(headers, next(worksheet.iter_rows(min_row=row_to_delete, max_row=row_to_delete, values_only=True))))
+            archive_deleted_record(deleted_record, QR_DIR, DATA_ROOT / "qr_stl_backup")
             worksheet.delete_rows(row_to_delete)
             workbook.save(WORKBOOK)
             workbook.close()
