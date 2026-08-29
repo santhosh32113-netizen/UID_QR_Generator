@@ -161,11 +161,11 @@ class DashboardHandler(SimpleHTTPRequestHandler):
 
     def do_GET(self):
         if urlsplit(self.path).path == "/data.js":
-            data_file = DATA_ROOT / "dashboard" / "data.js"
-            if not data_file.is_file():
-                self.send_error(404, "Dashboard data is missing")
-                return
-            body = data_file.read_bytes()
+            body = (
+                "window.dashboardData = "
+                + json.dumps(load_records(), ensure_ascii=True, separators=(",", ":"))
+                + ";\n"
+            ).encode("utf-8")
             self.send_response(200)
             self.send_header("Content-Type", "application/javascript; charset=utf-8")
             self.send_header("Content-Length", str(len(body)))
