@@ -10,7 +10,7 @@ import os
 import re
 import shutil
 import sys
-from urllib.parse import unquote
+from urllib.parse import unquote, urlsplit
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -158,6 +158,21 @@ class DashboardHandler(SimpleHTTPRequestHandler):
     def end_headers(self):
         self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
         super().end_headers()
+
+    def do_GET(self):
+        if urlsplit(self.path).path == "/data.js":
+            data_file = DATA_ROOT / "dashboard" / "data.js"
+            if not data_file.is_file():
+                self.send_error(404, "Dashboard data is missing")
+                return
+            body = data_file.read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "application/javascript; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
+        super().do_GET()
 
     def do_POST(self):
         if self.path == "/api/login":
