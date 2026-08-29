@@ -155,6 +155,10 @@ class DashboardHandler(SimpleHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=str(dashboard_root()), **kwargs)
 
+    def end_headers(self):
+        self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
+        super().end_headers()
+
     def do_POST(self):
         if self.path == "/api/login":
             length = int(self.headers.get("Content-Length", "0"))
