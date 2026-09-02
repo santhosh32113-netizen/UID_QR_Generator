@@ -1,0 +1,51 @@
+name: Build Windows package
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Validate release version
+        shell: pwsh
+        run: |
+          $version = (Get-Content VERSION -Raw).Trim()
+          if ($env:GITHUB_REF -match '^refs/tags/v(.+)$' -and $Matches[1] -ne $version) {
+            throw "VERSION ($version) does not match release tag ($env:GITHUB_REF_NAME)"
+          }
+          Write-Host "Building KUIN-G version $version"
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip && python -m pip install -r requirements.txt
+
+      - name: Build executable package
+        run: pyinstaller --noconfirm --clean --console --onedir --contents-directory . --name KUIN-G --hidden-import=tools.dashboard_server --hidden-import=tools.create_dashboard_data --hidden-import=src.generate_UIDS --add-data "dashboard;dashboard" --add-data "input;input" --add-data "output;output" --add-data "qr_codes;qr_codes" --add-data "qr_stl_backup;qr_stl_backup" --add-data "VERSION;." UID.py
+
+      - name: Verify packaged source folders
+        shell: pwsh
+        run: |
+          foreach ($path in @("dashboard/index.html", "input/Sample.xlsx", "output", "qr_codes", "qr_stl_backup")) {
+            if (-not (Test-Path $path)) { throw "Required source path is missing: $path" }
+          }
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: KUIN-G-Windows
+          path: dist/KUIN-G
+          if-no-files-found: error

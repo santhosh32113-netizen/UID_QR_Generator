@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KUIN-G | Kharga Unique Identification Number Generator</title>
+  <link rel="stylesheet" href="styles.css?v=payload-bounds-1">
+</head>
+<body>
+  <section id="login-screen" class="login-screen">
+    <form id="login-form" class="login-panel">
+      <div class="brand-mark">K<span>G</span></div>
+      <h1>KUIN-G</h1>
+      <p>Secure register access</p>
+      <label>Role<select id="login-role"><option value="user">User</option><option value="admin">Admin</option></select></label>
+      <label>Password<input id="login-password" type="password" autocomplete="current-password" required></label>
+      <button class="primary-button" type="submit">Sign in</button>
+      <span id="login-message" role="alert"></span>
+    </form>
+  </section>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand-mark">D<span>O</span></div>
+      <div class="brand-copy"><strong>KUIN-G</strong><small>Kharga unique identification number</small></div>
+      <nav aria-label="Primary navigation">
+        <button class="nav-item active admin-only" data-view="overview"><span class="nav-icon">⌂</span>Overview</button>
+        <button class="nav-item" data-view="add-asset"><span class="nav-icon">＋</span>Add asset</button>
+        <button class="nav-item admin-only" data-view="fleet"><span class="nav-icon">◈</span>Register</button>
+        <button class="nav-item admin-only" data-view="fleet"><span class="nav-icon">×</span>Delete asset</button>
+      </nav>
+      <div class="sidebar-foot"><span class="status-dot"></span><span>Sample register loaded</span></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">OPERATIONS / AIR SYSTEMS</p>
+          <h1 id="page-title">Fleet overview</h1>
+        </div>
+        <div class="top-actions">
+          <span class="role-switch" id="role-badge">USER</span>
+          <button class="quiet-button" id="password-button" title="Change password">Password</button>
+          <button class="quiet-button" id="logout-button" title="Sign out">Sign out</button>
+          <button class="icon-button" id="refresh-button" title="Refresh sample data" aria-label="Refresh sample data">↻</button>
+          <div class="avatar">CO</div>
+        </div>
+      </header>
+
+      <section class="context-strip">
+        <div><span class="context-label">REGISTER STATUS</span><strong>Live register</strong></div>
+        <div><span class="context-label">COVERAGE</span><strong id="coverage-summary">0 records · 0 units</strong></div>
+        <div class="context-alert"><span class="alert-mark">!</span><span><strong id="attention-count">0</strong> require attention</span></div>
+      </section>
+
+      <div id="add-asset-view" class="view-panel hidden">
+        <section class="section-intro"><div><p class="eyebrow">REGISTER ENTRY</p><h2>Add a new asset</h2><p>Complete the profile. Controlled fields protect data quality; Drone ID is generated automatically.</p></div><span class="pill good">PRIMARY KEY AUTO-GENERATED</span></section>
+        <section class="panel entry-panel">
+          <form id="asset-form" novalidate>
+            <div class="entry-grid" id="asset-fields"></div>
+            <div class="generated-id">
+  <span class="panel-kicker">GENERATED DRONE ID</span>
+  <strong id="generated-drone-id">Complete required fields</strong>
+  <small>Command-Corps-Brigade-Unit-Name-Type-Serial. The serial is assigned automatically.</small>
+
+  <div class="kuin-preview">
+    <div>
+      <span class="panel-kicker">KUIN-G / QR PAYLOAD</span>
+      <strong id="generated-kuin">Generated on save</strong>
+      <small>16-character identifier derived from HMAC-SHA256 and encoded as Base32.</small>
+    </div>
+    <span id="save-status-pill" class="save-status-pill pending">PENDING</span>
+  </div>
+
+  <section id="qr-result" class="qr-result hidden" aria-live="polite">
+    <div class="qr-image-wrap">
+      <img id="generated-qr" alt="Generated KUIN-G QR code">
+      <span class="qr-verified">✓ VERIFIED</span>
+    </div>
+    <div class="qr-result-copy">
+      <span class="panel-kicker">IDENTIFICATION COMPLETE</span>
+      <strong id="qr-kuin-large">—</strong>
+      <p id="qr-success-text">Record committed to Excel and QR generated.</p>
+      <div class="qr-actions">
+        <a id="qr-open" class="primary-button qr-action" href="#" target="_blank" rel="noopener">Open QR</a>
+        <a id="qr-download" class="quiet-button qr-action" href="#" download>Save QR</a>
+        <button id="qr-print" class="quiet-button qr-action" type="button">Print</button>
+      </div>
+      <small id="qr-path"></small>
+    </div>
+  </section>
+</div>
+            <div class="form-actions"><span id="form-message" role="status"></span><button type="reset" class="quiet-button form-button">Clear</button><button type="submit" class="primary-button">Generate KUIN-G &amp; save</button></div>
+          </form>
+        </section>
+      </div>
+
+      <div id="units-view" class="view-panel hidden"><div id="unit-table"></div><select id="formation-filter"><option value="all">All brigades</option></select></div>
+
+      <div id="overview-view" class="view-panel">
+        <section class="hero-row">
+          <div class="hero-copy"><p class="eyebrow" id="view-label">USER VIEW</p><h2>Register status</h2></div>
+          <div class="readiness-ring" id="readiness-ring"><div><strong id="hero-readiness">0%</strong><span>serviceable</span></div></div>
+          <div class="hero-note"><span class="note-kicker">ATTENTION QUEUE</span><strong id="hero-attention">0</strong><p>Assets currently marked Unsvc or Decommissioned.</p><button class="text-button" data-view-target="fleet">Review fleet <span>→</span></button></div>
+        </section>
+
+        <section class="metric-grid">
+          <article class="metric-card"><span class="metric-label">TOTAL HOLDINGS</span><strong id="total-holdings">0</strong><small>unique Drone IDs</small><span class="metric-accent blue"></span></article>
+          <article class="metric-card"><span class="metric-label">ACTIVE FLEET</span><strong id="active-fleet">0</strong><small><b class="positive" id="active-rate">0%</b> serviceable</small><span class="metric-accent green"></span></article>
+          <article class="metric-card"><span class="metric-label">REGISTER VALUE</span><strong id="register-value">0</strong><small>synthetic procurement cost</small><span class="metric-accent coral"></span></article>
+          <article class="metric-card"><span class="metric-label">EW RESILIENCE</span><strong id="ew-resilience">0%</strong><small>assets with Anti-EW profile</small><span class="metric-accent amber"></span></article>
+        </section>
+
+        <section class="content-grid">
+          <article class="panel capability-panel"><div class="panel-heading"><div><span class="panel-kicker">CAPABILITY MIX</span><h3>What the fleet is built to do</h3></div><button class="quiet-button" title="Capability data">⋮</button></div><div id="type-bars" class="bar-list"></div></article><article class="panel capability-panel"><div class="panel-heading"><div><span class="panel-kicker">PROCUREMENT FUNDING</span><h3>Proc Fund distribution</h3></div></div><div id="proc-fund-bars" class="bar-list"></div></article>
+          <article class="panel readiness-panel"><div class="panel-heading"><div><span class="panel-kicker">SERVICEABILITY</span><h3>Availability at a glance</h3></div><span class="pill good">SAMPLE REGISTER</span></div><div class="service-chart"><div class="donut" id="service-donut"><div><strong id="donut-readiness">0%</strong><span>ready</span></div></div><div class="legend" id="service-legend"></div></div><div class="service-foot"><span>Largest attention group</span><strong id="largest-attention">Unsvc · 0 assets</strong></div></article>
+        </section>
+
+        <section class="content-grid lower-grid">
+          <article class="panel guidance-panel"><div class="panel-heading"><div><span class="panel-kicker">CONTROL & NAVIGATION</span><h3>Guidance systems</h3></div></div><div id="guidance-list" class="guidance-list"></div></article>
+          <article class="panel ew-panel"><div class="panel-heading"><div><span class="panel-kicker">EW PROFILE</span><h3>EW resilience technologies</h3></div></div><div id="ew-profile-bars" class="bar-list"></div></article>
+        </section>
+      </div>
+
+      <div id="fleet-view" class="view-panel hidden"><section class="section-intro"><div><p class="eyebrow">REGISTER</p><h2>Asset details</h2></div><div class="search-box"><span>⌕</span><input id="fleet-search" type="search" placeholder="Search asset..." autocomplete="off"></div></section><section class="panel register-panel"><div class="register-toolbar"><div><span class="panel-kicker">COMMAND FILTERS</span><h3 id="result-count">Showing 0 records</h3></div></div><div class="hierarchy-filters"><select id="command-filter"><option value="all">All commands</option></select><select id="corps-filter"><option value="all">All corps</option></select><select id="division-filter"><option value="all">All divisions</option></select><select id="brigade-filter"><option value="all">All brigades</option></select></div><div id="fleet-table" class="data-table fleet-table"></div></section></div>
+    </main>
+  </div>
+  <dialog id="password-dialog" class="password-dialog">
+    <form id="password-form" method="dialog">
+      <h2>Change password</h2>
+      <label>New password<input id="new-password" type="password" minlength="4" required></label>
+      <label>Confirm password<input id="confirm-password" type="password" minlength="4" required></label>
+      <span id="password-message" role="status"></span>
+      <div class="form-actions"><button type="button" class="quiet-button" id="password-cancel">Cancel</button><button type="submit" class="primary-button">Update password</button></div>
+    </form>
+  </dialog>
+  <dialog id="edit-dialog" class="password-dialog">
+    <form id="edit-form" method="dialog">
+      <h2>Edit asset details</h2><strong id="edit-drone-id"></strong>
+      <label>Range<select name="Range"><option>&lt; 5 km</option><option>5-10 km</option><option>10-30 km</option><option>31-100 km</option><option>&gt; 100 km</option></select></label>
+      <label>Weight (KG)<input name="Weight (KG)" type="number" min="0" step="any"></label>
+      <label>Endurance (min)<input name="Endurance (min)" type="number" min="0" step="any"></label>
+      <label>Serviceability<select name="Serv"><option>Ser</option><option>Unser</option></select></label>
+      <label>EW resilience<select name="ewMode" id="edit-ew-mode"><option value="none">Non-EW resilient</option><option value="resilient">EW resilient</option></select></label>
+      <label id="edit-ew-technology-label" class="hidden">EW resilience technology<input name="Anti Ew" id="edit-ew-technology"></label>
+      <label>Proc Fund<select name="Proc Fund" id="edit-proc-fund"></select></label>
+      <label>Cost (in Thousands)<input name="Cost (in Thousands)" type="number" min="0" step="any"></label>
+      <label>Payload description<input name="Payload Description"></label>
+      <span id="edit-message" role="status"></span>
+      <div class="form-actions"><button type="button" class="quiet-button" id="edit-cancel">Cancel</button><button type="submit" class="primary-button">Save changes</button></div>
+    </form>
+  </dialog>
+  <dialog id="details-dialog" class="password-dialog details-dialog">
+    <h2>Complete asset record</h2>
+    <dl id="details-content" class="details-grid"></dl>
+    <div class="form-actions"><button type="button" class="quiet-button" onclick="document.getElementById('details-dialog').close()">Close</button></div>
+  </dialog>
+  <script src="data.js?v=edit-1"></script>
+  <script src="app.js?v=server-save-1"></script>
+  <script src="ew-control.js?v=ew-mode-1"></script>
+  <script src="auth.js?v=roles-5"></script>
+  <script src="edit.js?v=kuin-final-1"></script>
+</body>
+</html>
