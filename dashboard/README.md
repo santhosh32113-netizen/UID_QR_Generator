@@ -28,7 +28,7 @@ This creates:
 
 The CSV intentionally contains the complete operational record. Keep the restricted `Drone ID | KUIN-G` master register out of the report dataset.
 
-Drone ID is not editable. It is generated from the first 2 characters of Command, first 2 of Corps, first 3 of Division, first 4 of Brigade, and first 4 of Unit. A numeric suffix is added when that prescribed abbreviated hierarchy repeats, preserving primary-key uniqueness.
+Drone ID is not editable. It is generated from the first 2 characters of Command and Corps; first 3 of Division, Drone Name, Type, and Form Factor; and first 4 of Brigade and Unit. A numeric suffix is added when that prescribed abbreviated hierarchy repeats, preserving primary-key uniqueness.
 
 New dropdown values are resolved to their companion text input before saving; the literal `__new__` marker is never written to Excel.
 

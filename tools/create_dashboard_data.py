@@ -20,7 +20,7 @@ CSV_FILE = PROJECT_DIR / "dashboard" / "fleet_register.csv"
 
 EXPORT_FIELDS = [
     "Ser No", "Drone ID", "Drone Name", "Type", "Form Factor", "OEM",
-    "Range", "Weight (KG)", "Endurance (min)", "Payload", "Payload Weight",
+    "Range", "Weight (KG)", "Endurance (min)", "Day/Night Capability", "Payload", "Payload Weight",
     "Payload Description", "Guidance", "Anti Ew", "C2 Link Frequency", "Proc Fund",
     "Serv", "Cost (in Thousands)", "Image Front", "Image Back", "Image Top", "Image Bottom",
     "Unit", "Brigade", "Division", "Corps", "Command", "KUIN-G",

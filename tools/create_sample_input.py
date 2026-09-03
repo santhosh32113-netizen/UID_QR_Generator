@@ -9,7 +9,7 @@ from openpyxl.worksheet.datavalidation import DataValidation
 OUTPUT = Path("input") / "Sample.xlsx"
 HEADERS = [
     "Ser No", "Drone ID", "Drone Name", "Type", "Form Factor", "OEM", "Range",
-    "Weight (KG)", "Endurance (min)", "Payload", "Payload Weight", "Payload Description",
+    "Weight (KG)", "Endurance (min)", "Day/Night Capability", "Payload", "Payload Weight", "Payload Description",
     "Guidance", "Anti Ew", "C2 Link Frequency", "Proc Fund", "Serv",
     "Cost (in Thousands)", "Image Front", "Image Back", "Image Top", "Image Bottom",
     "Unit", "Brigade", "Division", "Corps", "Command", "KUIN-G",
@@ -18,6 +18,7 @@ CONTROLLED_VALUES = {
     "Type": ["Trg", "Svl (SR)", "Svl (MR)", "FPV", "Kamikaze", "Lgs", "Loitering Munition"],
     "Form Factor": ["QC", "HC", "Fixed Wg", "FIxed Wing VTOL", "Swarm"],
     "Range": ["< 5 km", "5-10 km", "10-30 km", "31-100 km", "> 100 km"],
+    "Day/Night Capability": ["Day", "Night"],
     "C2 Link Frequency": ["1.4 GHz", "2.4 GHz", "5.8 GHz", "900 MHz"],
     "Proc Fund": ["ATG", "Regtl", "Unit", "Central"],
     "Anti Ew": ["Nil"],

@@ -158,9 +158,14 @@ def verify_saved_record(drone_id: str, kuin: str) -> None:
     wb = load_workbook(WORKBOOK, read_only=True, data_only=True)
     try:
         ws = wb.active
+        headers = [cell.value for cell in ws[2]]
+        try:
+            kuin_column = headers.index("KUIN-G") + 1
+        except ValueError as error:
+            raise IOError("Excel verification failed: KUIN-G column is missing.") from error
         for row in range(3, ws.max_row + 1):
             if str(ws.cell(row, 2).value or "") == drone_id:
-                saved_kuin = str(ws.cell(row, 28).value or "")
+                saved_kuin = str(ws.cell(row, kuin_column).value or "")
                 if saved_kuin != kuin:
                     raise IOError(
                         f"Excel verification failed for {drone_id}: expected KUIN-G {kuin}, found {saved_kuin or '<blank>'}."
@@ -236,7 +241,7 @@ def hierarchy_id(record, existing_ids):
     base = "-".join([
         fragment(record["Command"], 2), fragment(record["Corps"], 2),
         fragment(record["Division"], 3), fragment(record["Brigade"], 4), fragment(record["Unit"], 4),
-        fragment(record["Drone Name"], 3), fragment(record["Type"], 3),
+        fragment(record["Drone Name"], 3), fragment(record["Type"], 3), fragment(record["Form Factor"], 3),
         f"{int(record.get('Ser No') or 1):02d}",
     ])
     matches = sum(existing_id == base or existing_id.startswith(f"{base}-") for existing_id in existing_ids)
@@ -371,9 +376,9 @@ class DashboardHandler(SimpleHTTPRequestHandler):
                 try:
                     worksheet = workbook.active
                     headers = [cell.value for cell in worksheet[2]]
-                    if len(headers) < 28 or headers[1] != "Drone ID" or headers[27] != "KUIN-G":
+                    if len(headers) < 2 or headers[1] != "Drone ID" or "KUIN-G" not in headers:
                         raise ValueError(
-                            "Sample.xlsx has an unexpected schema. Expected Drone ID in column B and KUIN-G in column AB."
+                            "Sample.xlsx has an unexpected schema. Expected Drone ID in column B and a KUIN-G column."
                         )
                     required = [
                         header for header in headers

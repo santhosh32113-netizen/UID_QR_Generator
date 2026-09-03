@@ -24,8 +24,9 @@ try:
     print(f"Rows      : {ws.max_row}")
     print(f"Columns   : {ws.max_column}")
     print(f"Drone ID  : column B = {headers[1] if len(headers) > 1 else None!r}")
-    print(f"KUIN-G    : column AB = {headers[27] if len(headers) > 27 else None!r}")
-    if len(headers) < 28 or headers[1] != "Drone ID" or headers[27] != "KUIN-G":
+    kuin_column = headers.index("KUIN-G") + 1 if "KUIN-G" in headers else None
+    print(f"KUIN-G    : column {kuin_column} = {'KUIN-G' if kuin_column else None!r}")
+    if len(headers) < 2 or headers[1] != "Drone ID" or kuin_column is None:
         raise SystemExit("ERROR: Sample.xlsx schema is not compatible with the application.")
 finally:
     wb.close()

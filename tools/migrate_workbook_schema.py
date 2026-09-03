@@ -18,7 +18,7 @@ from src.generate_UIDS import load_secret_key, make_kuin, remove_orphan_qr_files
 SOURCE = ROOT / "input" / "Sample.xlsx"
 HEADERS = [
     "Ser No", "Drone ID", "Drone Name", "Type", "Form Factor", "OEM", "Range",
-    "Weight (KG)", "Endurance (min)", "Payload", "Payload Weight", "Payload Description",
+    "Weight (KG)", "Endurance (min)", "Day/Night Capability", "Payload", "Payload Weight", "Payload Description",
     "Guidance", "Anti Ew", "C2 Link Frequency", "Proc Fund", "Serv",
     "Cost (in Thousands)", "Image Front", "Image Back", "Image Top", "Image Bottom",
     "Unit", "Brigade", "Division", "Corps", "Command", "KUIN-G",
@@ -27,6 +27,7 @@ CONTROLLED_VALUES = {
     "Type": ["Trg", "Svl (SR)", "Svl (MR)", "FPV", "Kamikaze", "Lgs", "Loitering Munition"],
     "Form Factor": ["QC", "HC", "Fixed Wg", "FIxed Wing VTOL", "Swarm"],
     "Range": ["< 5 km", "5-10 km", "10-30 km", "31-100 km", "> 100 km"],
+    "Day/Night Capability": ["Day", "Night"],
     "C2 Link Frequency": ["1.4 GHz", "2.4 GHz", "5.8 GHz", "900 MHz"],
     "Proc Fund": ["ATG", "Regtl", "Unit", "Central"],
     "Serv": ["Ser", "Unser"],
@@ -42,7 +43,7 @@ def hierarchy_id(row: dict[str, object], occurrence: int) -> str:
     base = "-".join([
         fragment(row["Command"], 2), fragment(row["Corps"], 2),
         fragment(row["Division"], 3), fragment(row["Brigade"], 4), fragment(row["Unit"], 4),
-        fragment(row["Drone Name"], 3), fragment(row["Type"], 3),
+        fragment(row["Drone Name"], 3), fragment(row["Type"], 3), fragment(row["Form Factor"], 3),
         f"{int(row['Ser No'] or 0):02d}",
     ])
     return base if occurrence == 1 else f"{base}-{occurrence:02d}"
@@ -99,7 +100,7 @@ def main() -> None:
         row["Image Back"] = old.get("Image Back", "")
         row["Image Top"] = old.get("Image Top", "")
         row["Image Bottom"] = old.get("Image Bottom", "")
-        base = "-".join([fragment(row["Command"], 2), fragment(row["Corps"], 2), fragment(row["Division"], 3), fragment(row["Brigade"], 4), fragment(row["Unit"], 4), fragment(row["Drone Name"], 3), fragment(row["Type"], 3), f"{int(row['Ser No'] or 0):02d}"])
+        base = "-".join([fragment(row["Command"], 2), fragment(row["Corps"], 2), fragment(row["Division"], 3), fragment(row["Brigade"], 4), fragment(row["Unit"], 4), fragment(row["Drone Name"], 3), fragment(row["Type"], 3), fragment(row["Form Factor"], 3), f"{int(row['Ser No'] or 0):02d}"])
         occurrences[base] += 1
         row["Drone ID"] = hierarchy_id(row, occurrences[base])
         row["KUIN-G"] = make_kuin(row["Drone ID"], secret_key)

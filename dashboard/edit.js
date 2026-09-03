@@ -63,7 +63,7 @@ document.getElementById('edit-form').addEventListener('submit', async (event) =>
   if (changes.Serv === 'Unser') changes.Serv = 'Unsvc';
   Object.assign(editingRecord, changes);
   document.getElementById('edit-dialog').close();
-  renderOverview(); renderService(); renderGuidance(); renderEWProfiles(); renderProcFund(); renderFleetWithEdit(document.getElementById('fleet-search').value);
+  renderOverview(); renderGuidance(); renderEWProfiles(); renderProcFund(); renderFleetWithEdit(document.getElementById('fleet-search').value);
 });
 const originalRenderFleet = renderFleet;
 renderFleet = renderFleetWithEdit;
